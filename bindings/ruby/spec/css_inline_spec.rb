@@ -110,6 +110,7 @@ RSpec.describe 'CssInline' do
     ["external.css", {"base_url": "http://127.0.0.1:1234"}]
   ].each do |href, kwargs|
       it "Resolves remote stylesheets: #{href}" do
+        skip "External stylesheet loading is not yet supported by the JRuby backend" if RUBY_ENGINE == "jruby"
         # Fails with the following on Windows:
         # error trying to connect: tcp set_nonblocking error: An operation was attempted on something that is not a socket. (os error 10038)
         skip 'Skipping on Windows' if RUBY_PLATFORM =~ /mswin|mingw|cygwin/
@@ -162,6 +163,8 @@ h2 { color: red; }
   end
 
   it 'Shows the stylesheet location in network errors' do
+    skip "External stylesheet loading is not yet supported by the JRuby backend" if RUBY_ENGINE == "jruby"
+
     expect {
         CSSInline::CSSInliner.new.inline('''
         <html>

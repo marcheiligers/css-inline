@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "bundler"
+require "English"
 require "rake/extensiontask"
 require 'rspec/core/rake_task'
 
@@ -38,6 +39,24 @@ RSpec::Core::RakeTask.new(:test) do |task|
 end
 
 task test: :compile
+
+if RUBY_ENGINE == "jruby"
+  Rake::Task[:compile].clear
+
+  task :compile do
+    sh "rustup", "target", "add", "wasm32-wasip1"
+
+    rustc = `rustup which rustc --toolchain stable`.strip
+    abort "rustup could not locate the stable Rust compiler" unless $CHILD_STATUS.success?
+
+    sh(
+      { "RUSTC" => rustc },
+      "rustup", "run", "stable", "cargo", "build",
+      "--manifest-path", "Cargo.toml", "-p", "css-inline-wasm",
+      "--release", "--target", "wasm32-wasip1"
+    )
+  end
+end
 
 task bench: :compile do
   ruby "-I lib test/bench.rb"
